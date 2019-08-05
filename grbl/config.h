@@ -57,7 +57,7 @@
 #endif
 
 #define AXIS_1 0        // Axis indexing value. Must start with 0 and be continuous.
-#define AXIS_1_NAME 'X'
+#define AXIS_1_NAME 'X' // Axis names must be in X, Y, Z, A, B, C, U, V & W.
 #define AXIS_2 1
 #define AXIS_2_NAME 'Y'
 #define AXIS_3 2
@@ -80,6 +80,31 @@
 #endif
 #if N_AXIS > 6
   #error "N_AXIS must be <= 6. N_AXIS > 6 is not implemented."
+#endif
+
+// Renaming axis doesn't change their number. By default, the status report give axis values in
+// the order of their number. Some graphical interface are not able to affect axis values reported
+// by Grbl to the correct axis name.
+// Uncomment to enable sorting of axis values by axis_names rather than by axis number. Default disabled.
+// If this option is enabled, the sorting order will be X, Y, Z, U, V, W, A, B and C as defined below.
+//#define SORT_REPORT_BY_AXIS_NAME
+//#define AXIS_NAME_SORT_ORDER {'X', 'Y', 'Z', 'U', 'V', 'W', 'A', 'B', 'C'}
+
+#ifdef SORT_REPORT_BY_AXIS_NAME
+  #ifndef AXIS_NAME_SORT_ORDER
+    #error You must define AXIS_NAME_SORT_ORDER to use SORT_REPORT_BY_AXIS_NAME
+  #endif
+#endif
+
+// By default, Grbl report all values of each axis. When cloning axis with more than one axis with
+// the same name, Grbl reports the values several times for the same axis_name if it is cloned.
+// Uncomment to enable report of axis values only one time by axis_names in case of clones axis.
+//#define REPORT_VALUE_FOR_AXIS_NAME_ONCE
+
+#ifdef REPORT_VALUE_FOR_AXIS_NAME_ONCE
+  #ifndef SORT_REPORT_BY_AXIS_NAME
+    #error You must define SORT_REPORT_BY_AXIS_NAME to use REPORT_VALUE_FOR_AXIS_NAME_ONCE
+  #endif
 #endif
 
 // Define realtime command special characters. These characters are 'picked-off' directly from the
@@ -145,27 +170,27 @@
 // NOTE: Defaults are set for a traditional 3-axis CNC machine. Z-axis first to clear, followed by X & Y.
 #ifdef DEFAULTS_RAMPS_BOARD
   #if N_AXIS == 4 // 4 axis : homing
-    #define HOMING_CYCLE_0 (1<<AXIS_4) // Home 4th axis (A)
-    #define HOMING_CYCLE_1 (1<<AXIS_1) // Home X axis
-    #define HOMING_CYCLE_2 (1<<AXIS_2) // Home Y axis
-    #define HOMING_CYCLE_3 (1<<AXIS_3) // OPTIONAL: Home Z axis
-  #elif N_AXIS == 5 // 5 axis : homing
-    #define HOMING_CYCLE_0 (1<<AXIS_4) // Home 4th axis (A)
-    #define HOMING_CYCLE_1 (1<<AXIS_5) // Home 5th axis (B)
+    #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
+    #define HOMING_CYCLE_1 (1<<AXIS_4) // Home 4th axis (A)
     #define HOMING_CYCLE_2 (1<<AXIS_1) // Home X axis
     #define HOMING_CYCLE_3 (1<<AXIS_2) // Home Y axis
-    #define HOMING_CYCLE_4 (1<<AXIS_3) // OPTIONAL: Home Z axis
-  #elif N_AXIS == 6 // 6 axis : homing
-    #define HOMING_CYCLE_0 (1<<AXIS_4) // Home 4th axis (A)
-    #define HOMING_CYCLE_1 (1<<AXIS_5) // Home 5th axis (B)
-    #define HOMING_CYCLE_2 (1<<AXIS_6) // Home 6th axis (C)
+  #elif N_AXIS == 5 // 5 axis : homing
+    #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
+    #define HOMING_CYCLE_1 (1<<AXIS_4) // Home 4th axis (A)
+    #define HOMING_CYCLE_2 (1<<AXIS_5) // Home 5th axis (B)
     #define HOMING_CYCLE_3 (1<<AXIS_1) // Home X axis
     #define HOMING_CYCLE_4 (1<<AXIS_2) // Home Y axis
-    #define HOMING_CYCLE_5 (1<<AXIS_3) // OPTIONAL: Home Z axis
+  #elif N_AXIS == 6 // 6 axis : homing
+    #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
+    #define HOMING_CYCLE_1 (1<<AXIS_4) // Home 4th axis (A)
+    #define HOMING_CYCLE_2 (1<<AXIS_5) // Home 5th axis (B)
+    #define HOMING_CYCLE_3 (1<<AXIS_6) // Home 6th axis (C)
+    #define HOMING_CYCLE_4 (1<<AXIS_1) // Home X axis
+    #define HOMING_CYCLE_5 (1<<AXIS_2) // Home Y axis
   #else // Classic 3 axis
-    #define HOMING_CYCLE_0 (1<<AXIS_1) // Home X axis
-    #define HOMING_CYCLE_1 (1<<AXIS_2) // Home Y axis
-    #define HOMING_CYCLE_2 (1<<AXIS_3) // OPTIONAL: Home Z axis
+    #define HOMING_CYCLE_0 (1<<AXIS_3) // Home Z axis first to clear workspace.
+    #define HOMING_CYCLE_1 (1<<AXIS_1) // Home X axis
+    #define HOMING_CYCLE_2 (1<<AXIS_2) // Home Y axis
   #endif
 #else
   #define HOMING_CYCLE_0 (1<<AXIS_3)                // REQUIRED: First move Z to clear workspace.
@@ -294,7 +319,7 @@
 // ADVANCED CONFIGURATION OPTIONS:
 
 // Enables code for debugging purposes. Not for general use and always in constant flux.
-// #define DEBUG // Uncomment to enable. Default disabled.
+//#define DEBUG // Uncomment to enable. Default disabled.
 
 // Configure rapid, feed, and spindle override settings. These values define the max and min
 // allowable override values and the coarse and fine increments per command received. Please
